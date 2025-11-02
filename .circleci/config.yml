@@ -1,97 +1,71 @@
 version: 2.1
 
+commands:
+  setup-poetry:
+    steps:
+      - run:
+          name: Install Poetry
+          command: |
+            curl -sSL https://install.python-poetry.org | python3 -
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> $BASH_ENV
+
+  install-deps:
+    steps:
+      - restore_cache:
+          keys:
+            - poetry-v1-{{ checksum "pyproject.toml" }}
+            - poetry-v1-
+      - run:
+          name: Install dependencies
+          command: poetry install --no-interaction --no-root
+      - save_cache:
+          paths:
+            - ~/.cache/pypoetry
+          key: poetry-v1-{{ checksum "pyproject.toml" }}
+
 jobs:
-  lint:
+  base-job:
     docker:
       - image: cimg/python:3.12
+    parameters:
+      task:
+        type: string
     steps:
       - checkout
-      - run:
-          name: Install Poetry
-          command: |
-            curl -sSL https://install.python-poetry.org | python3 -
-            echo 'export PATH="$HOME/.local/bin:$PATH"' >> $BASH_ENV
-      - restore_cache:
-          keys:
-            - poetry-v1-{{ checksum "pyproject.toml" }}
-            - poetry-v1-
-      - run:
-          name: Install dependencies
-          command: |
-            poetry install --no-interaction --no-root
-      - save_cache:
-          paths:
-            - ~/.cache/pypoetry
-          key: poetry-v1-{{ checksum "pyproject.toml" }}
-      - run:
-          name: Run ruff linting
-          command: poetry run ruff check src tests
-      - run:
-          name: Check code formatting
-          command: poetry run ruff format --check src tests
-
-  type-check:
-    docker:
-      - image: cimg/python:3.12
-    steps:
-      - checkout
-      - run:
-          name: Install Poetry
-          command: |
-            curl -sSL https://install.python-poetry.org | python3 -
-            echo 'export PATH="$HOME/.local/bin:$PATH"' >> $BASH_ENV
-      - restore_cache:
-          keys:
-            - poetry-v1-{{ checksum "pyproject.toml" }}
-            - poetry-v1-
-      - run:
-          name: Install dependencies
-          command: |
-            poetry install --no-interaction --no-root
-      - save_cache:
-          paths:
-            - ~/.cache/pypoetry
-          key: poetry-v1-{{ checksum "pyproject.toml" }}
-      - run:
-          name: Run mypy type checking
-          command: poetry run mypy src
-
-  test:
-    docker:
-      - image: cimg/python:3.12
-    steps:
-      - checkout
-      - run:
-          name: Install Poetry
-          command: |
-            curl -sSL https://install.python-poetry.org | python3 -
-            echo 'export PATH="$HOME/.local/bin:$PATH"' >> $BASH_ENV
-      - restore_cache:
-          keys:
-            - poetry-v1-{{ checksum "pyproject.toml" }}
-            - poetry-v1-
-      - run:
-          name: Install dependencies
-          command: |
-            poetry install --no-interaction --no-root
-      - save_cache:
-          paths:
-            - ~/.cache/pypoetry
-          key: poetry-v1-{{ checksum "pyproject.toml" }}
-      - run:
-          name: Run tests with coverage
-          command: poetry run pytest --cov=src --cov-report=term-missing --cov-report=xml
-      - store_test_results:
-          path: test-results
-      - store_artifacts:
-          path: coverage.xml
-          destination: coverage
+      - setup-poetry
+      - install-deps
+      - when:
+          condition:
+            equal: [ << parameters.task >>, "lint" ]
+          steps:
+            - run: poetry run ruff check src tests
+            - run: poetry run ruff format --check src tests
+      - when:
+          condition:
+            equal: [ << parameters.task >>, "type-check" ]
+          steps:
+            - run: poetry run mypy src
+      - when:
+          condition:
+            equal: [ << parameters.task >>, "test" ]
+          steps:
+            - run: poetry run pytest --cov=src --cov-report=term-missing --cov-report=xml
+            - store_test_results:
+                path: test-results
+            - store_artifacts:
+                path: coverage.xml
+                destination: coverage
 
 workflows:
   version: 2
   ci:
     jobs:
-      - lint
-      - type-check
-      - test
-
+      - base-job:
+          name: lint
+          task: "lint"
+      - base-job:
+          name: type-check
+          task: "type-check"
+      - base-job:
+          name: test
+          task: "test"
