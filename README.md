@@ -168,10 +168,9 @@ poetry install
 
 *(To be determined)*
 
-## PYTHON APPLICATION
+## CircleCI
 
-This Python application repo was created to showcase the integration between GitHub and CircleCI.
-[https://circleci.com/gh/CIRCLECI-GWP/python_app.svg?style=svg](https://circleci.com/gh/CIRCLECI-GWP/python_app){: target="_blank"}
+[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/XbC7AoPbDq6kv77Q92i6dK/9FPwBXXN1scw4EnPpD9g5m/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/circleci/XbC7AoPbDq6kv77Q92i6dK/9FPwBXXN1scw4EnPpD9g5m/tree/main)
 
 ## References
 
