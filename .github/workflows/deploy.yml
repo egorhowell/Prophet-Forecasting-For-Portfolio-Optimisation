@@ -3,7 +3,7 @@ name: Deploy to Hostinger VPS
 on:
   push:
     branches:
-      - main # Or your default branch name
+      - main
 
 jobs:
   deploy:
@@ -15,7 +15,7 @@ jobs:
       - name: Deploy to VPS
         uses: appleboy/ssh-action@master
         with:
-          host: 31.97.116.211 # Your VPS IP
-          username: root # Your SSH username
+          host: 31.97.116.211
+          username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: /root/Prophet-Forecasting-For-Portfolio-Optimisation/scripts/deploy.sh
