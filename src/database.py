@@ -44,7 +44,8 @@ def save_results_to_supabase(result: dict[str, Any]) -> None:
     Raises:
         ValueError: If Supabase client cannot be created or insertion fails
     """
-    supabase = get_supabase_client()
+    supabase =\
+        get_supabase_client()
     if supabase is None:
         raise ValueError(
             "Supabase client not available. Check SUPABASE_URL and SUPABASE_KEY environment variables."
