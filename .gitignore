@@ -22,6 +22,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.python-version
 
 # Poetry
 poetry.lock
@@ -66,21 +67,6 @@ dmypy.json
 # Environment variables
 .env
 .env.local
-
-# Data (uncomment if you want to ignore data files)
-# data/
-# *.csv
-# *.parquet
-# *.h5
-# *.hdf5
-
-# Models (uncomment if you want to ignore model files)
-# models/
-# *.pkl
-# *.h5
-# *.ckpt
-# *.pt
-# *.pth
 
 # Logs
 *.log
