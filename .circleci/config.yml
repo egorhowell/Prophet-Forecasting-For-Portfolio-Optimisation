@@ -19,6 +19,7 @@ workflows:
   version: 2
   ci:
     jobs:
+      - install-and-cache
       - python/run-commands:
           name: lint
           executor: python-executor
