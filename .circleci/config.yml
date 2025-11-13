@@ -1,79 +1,47 @@
 version: 2.1
+orbs:
+  python: circleci/python@2.0.0
 
-commands:
-  setup-poetry:
-    steps:
-      - run:
-          name: Install Poetry
-          command: |
-            curl -sSL https://install.python-poetry.org | python3 -
-            echo 'export PATH="$HOME/.local/bin:$PATH"' >> $BASH_ENV
-
-  install-deps:
-    steps:
-      - restore_cache:
-          keys:
-            - poetry-v1-{{ checksum "pyproject.toml" }}
-            - poetry-v1-
-      - run:
-          name: Install dependencies
-          command: poetry install --no-interaction
-      - save_cache:
-          paths:
-            - ~/.cache/pypoetry
-          key: poetry-v1-{{ checksum "pyproject.toml" }}
+executors:
+  python-executor:
+    executor:
+      name: python/default
+      tag: "3.12"
 
 jobs:
-  base-job:
-    docker:
-      - image: cimg/python:3.12
-    parameters:
-      task:
-        type: string
+  install-and-cache:
+    executor: python-executor
     steps:
       - checkout
-      - setup-poetry
-      - install-deps
-      - when:
-          condition:
-            equal: [ << parameters.task >>, "lint" ]
-          steps:
-            - run:
-                name: Run ruff linting
-                command: poetry run ruff check src tests
-            - run:
-                name: Check code formatting with black
-                command: poetry run black --check src tests
-      - when:
-          condition:
-            equal: [ << parameters.task >>, "type-check" ]
-          steps:
-            - run:
-                name: Run mypy type checking
-                command: poetry run mypy src
-      - when:
-          condition:
-            equal: [ << parameters.task >>, "test" ]
-          steps:
-            - run:
-                name: Run tests with coverage
-                command: poetry run pytest --cov=src --cov-report=term-missing --cov-report=xml
-            - store_test_results:
-                path: test-results
-            - store_artifacts:
-                path: coverage.xml
-                destination: coverage
+      - python/install-deps-with-poetry
 
 workflows:
   version: 2
   ci:
     jobs:
-      - base-job:
+      - python/run-commands:
           name: lint
-          task: "lint"
-      - base-job:
+          executor: python-executor
+          requires:
+            - install-and-cache
+          commands: |
+            poetry run ruff check src tests
+            poetry run black --check src tests
+
+      - python/run-commands:
           name: type-check
-          task: "type-check"
-      - base-job:
+          executor: python-executor
+          requires:
+            - install-and-cache
+          commands: |
+            poetry run mypy src
+
+      - python/test:
           name: test
-          task: "test"
+          executor: python-executor
+          requires:
+            - install-and-cache
+          command: |
+            poetry run pytest --cov=src --cov-report=term-missing --cov-report=xml
+          store-test-results: true
+          store-coverage-artifacts: true
