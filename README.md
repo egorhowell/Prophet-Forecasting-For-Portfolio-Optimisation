@@ -7,6 +7,8 @@ _(Needless to say it's for illustrative purposes and not financial advice)._
 
 **Live Application**: This project is hosted on a Hostinger VPS, runs every morning at 9am UTC and is accessible at [portfolio-optimisation.com](https://portfolio-optimisation.com)
 
+**Presentation Slides**: Here are slides to accompany this ReadME
+
 ## Components
 
 ### 1. Prophet (Time Series Forecasting)
@@ -63,59 +65,22 @@ Where:
 ## Project Workflow
 
 ```
-Historical Data Extraction (yfinance)
+Historical Data Extraction
     ↓
-Data Preprocessing & Alignment
+Data Preprocessing
     ↓
-Prophet Model Training (per ticker)
+Prophet Model Training
     ↓
-Price Forecasting (next day)
+Price Forecasting
     ↓
-Return Calculation (from prices)
-    ↓
-Mean Returns & Covariance Matrix
-    ↓
-Markowitz Optimisation (SciPy)
+Markowitz Optimisation
     ↓
 Optimal Portfolio Weights
     ↓
-Results Logging & Output
+Results Saved to Supabase
+    ↓
+Streamlit Dashboard Hosted on Hostinger VPS
 ```
-
-## Project Structure
-
-```
-Prophet-Forecasting-For-Portfolio-Optimisation/
-├── README.md
-├── pyproject.toml          # Poetry dependencies and project config
-├── poetry.lock             # Locked dependency versions
-├── Makefile                # Convenience commands (install, test, lint, etc.)
-├── .circleci/
-│   └── config.yml          # CircleCI CI/CD configuration
-├── .github/
-│   └── workflows/
-│       ├── daily-optimisation.yml  # Daily GitHub Actions workflow (runs at 9am UTC)
-│       └── deploy.yml              # Deployment workflow to Hostinger VPS
-├── scripts/
-│   └── deploy.sh           # Deployment script
-├── src/
-│   ├── __init__.py
-│   ├── main.py             # Main entry point and run_optimisation()
-│   ├── data.py             # Data extraction and preprocessing
-│   ├── database.py         # Database operations
-│   ├── model.py            # ProphetModel class
-│   ├── optimiser.py        # Portfolio optimisation functions
-│   ├── settings.py         # Configuration constants (tickers, risk params)
-│   └── streamlit_app.py    # Streamlit web application
-├── tests/
-    ├── __init__.py
-    ├── test_data.py        # Tests for data module
-    ├── test_database.py    # Tests for database module
-    ├── test_model.py       # Tests for Prophet model
-    └── test_optimiser.py   # Tests for optimisation functions
-
-```
-
 ## Installation
 
 ### Standard Installation
@@ -131,14 +96,16 @@ poetry install
 ### Requirements
 
 - Python 3.12+
-- Poetry (for dependency management)
-
-The project uses Poetry for dependency management. If you don't have Poetry installed:
-
-```bash
-# Install Poetry
-curl -sSL https://install.python-poetry.org | python3 -
-```
+  - I recommend installing through [PyEnv](https://github.com/pyenv/pyenv)
+  - PyEnv can be installed through [Brew](https://brew.sh/).
+- Poetry
+  - [Basic usage](https://python-poetry.org/docs/basic-usage/)
+- CircleCI account
+  - [Setup guide](https://circleci.com/blog/setting-up-continuous-integration-with-github/)
+- Supabase account and project
+  - [Starting guide](https://supabase.com/docs/guides/getting-started)
+- [Hostinger VPS](https://www.hostinger.com/vps-hosting)
+  - [Guide to deploying a Streamlit App on Hostinger VPS](https://egorhowell.notion.site/Streamlit-Deployment-Guide-on-Hostinger-VPS-2ad2dbb15bea808c9683f6da61e3a4e8?source=copy_link)
 
 ## Usage
 
@@ -168,8 +135,8 @@ Example:
 ```python
 # src/settings.py
 PORTFOLIO_TICKERS = ["AAPL", "MSFT", "GOOGL", "TSLA", "AMZN"]
-RISK_AVERSION = 3  # Higher = more risk averse
-MINIMUM_ALLOCATION = 0.05  # 5% minimum per asset
+RISK_AVERSION = 3 
+MINIMUM_ALLOCATION = 0.05 
 START_DATE = "2024-01-01"
 ```
 
@@ -181,11 +148,34 @@ from src.main import run_optimisation
 result = run_optimisation(
     tickers=["AAPL", "MSFT", "GOOGL"],
     start_date="2024-01-01",
-    end_date="2024-12-31",
-    minimum_allocation=0.1  # 10% minimum
+    end_date="2024-12-31"
 )
 
 print(f"Optimal Weights: {result['weights']}")
 print(f"Predicted Returns: {result['predicted_returns']}")
+print(f"Current Prices: {result['current_prices']}")
+print(f"Prediction Date: {result['prediction_date']}")
 ```
+
+### Running the Streamlit Dashboard
+
+The Streamlit dashboard reads from Supabase to display historical predictions, portfolio weights, and performance metrics:
+
+```bash
+poetry run streamlit run src/streamlit_app.py
+```
+
+Or using the Makefile:
+
+```bash
+make dashboard
+```
+
+The dashboard allows you to:
+- View portfolio weights and predictions for any date
+- Analywe individual stock performance over time
+- Compare predicted vs actual prices
+- Track prediction accuracy metrics
+
+**Note:** The dashboard requires Supabase to be configured and populated with data from previous optimization runs.
 
