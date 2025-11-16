@@ -53,7 +53,7 @@ def optimize_portfolio_mean_variance(
     minimum_allocation: float = MINIMUM_ALLOCATION,
     maximum_allocation: float = MAXIMUM_ALLOCATION,
     risk_aversion: float = RISK_AVERSION,
-) -> pd.Series:
+) -> dict[str, float]:
     """
     Optimise portfolio using mean-variance (maximise return - risk_penalty).
 
@@ -64,7 +64,7 @@ def optimize_portfolio_mean_variance(
         risk_aversion: Risk-aversion coefficient (lambda) (default: RISK_AVERSION)
 
     Returns:
-        pd.Series of optimal weights indexed by ticker, where weights sum to 1.0
+        Dictionary mapping ticker to optimal weight, where weights sum to 1.0
 
     Raises:
         ValueError: If optimisation fails
@@ -97,4 +97,8 @@ def optimize_portfolio_mean_variance(
     if not result.success:
         raise ValueError(f"Optimisation failed: {result.message}")
 
-    return pd.Series(result.x, index=tickers)
+    # Build a typed dictionary of weights to satisfy static type checking
+    weights: dict[str, float] = {
+        ticker: float(weight) for ticker, weight in zip(tickers, result.x, strict=True)
+    }
+    return weights

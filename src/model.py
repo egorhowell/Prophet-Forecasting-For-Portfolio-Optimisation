@@ -9,28 +9,14 @@ import pandas as pd
 import pandas_market_calendars as mcal
 from prophet import Prophet
 
+from .settings import HOLIDAY_NAME_MAP, PROPHET_PARAMS
+
 logger = logging.getLogger(__name__)
-
-
-_HOLIDAY_NAME_MAP = {
-    "New Year's Day": "new_years",
-    "Dr. Martin Luther King Jr. Day": "mlk_day",
-    "Good Friday": "good_friday",
-    "Memorial Day": "memorial_day",
-    "July 4th": "independence_day",
-    "Labor Day": "labor_day",
-    "Thanksgiving": "thanksgiving",
-    "Election Day": "election_day",
-    "Veteran Day": "veterans_day",
-    "Columbus Day": "columbus_day",
-    "Christmas": "christmas",
-    "Christmas Day": "christmas",
-}
 
 
 def _normalise_holiday_name(name: str) -> str:
     """Convert calendar holiday names into Prophet-friendly labels."""
-    if mapped := _HOLIDAY_NAME_MAP.get(name):
+    if mapped := HOLIDAY_NAME_MAP.get(name):
         return mapped
     cleaned = name.lower()
     for char in ("'", ",", ".", "’"):
@@ -141,14 +127,7 @@ class ProphetModel:
         ]
 
         # Initialise Prophet with holidays and seasonality
-        # For stocks, we want to explicitly configure seasonalities
-        prophet_params = {
-            "yearly_seasonality": True,  # Year-end, January effects
-            "weekly_seasonality": True,  # Day-of-week effects (Monday/Friday patterns)
-            "daily_seasonality": False,  # Not relevant for daily closing prices
-            "seasonality_mode": "additive",  # Additive seasonality for stocks
-            "seasonality_prior_scale": 10.0,  # Strong seasonality signals
-        }
+        prophet_params = PROPHET_PARAMS.copy()
 
         if not holidays.empty:
             prophet_params["holidays"] = holidays
@@ -204,6 +183,7 @@ class ProphetModel:
         """
         predictions: dict[str, float] = {}
         predicted_returns: dict[str, float] = {}
+        current_prices: dict[str, float] = {}
 
         for ticker in portfolio_data.keys():
             # Get stock data
@@ -211,6 +191,7 @@ class ProphetModel:
 
             # Get current price
             current_price = df_stock["Price"].iloc[-1]
+            current_prices[ticker] = current_price
 
             # Predict next day price
             predicted_price = self.predict_next(df_stock["Price"])

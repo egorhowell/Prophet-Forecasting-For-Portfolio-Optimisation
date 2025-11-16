@@ -1,31 +1,15 @@
-"""Tests for data module."""
+"""Tests for processor module."""
 
 from datetime import date, timedelta
 
 import numpy as np
 import pandas as pd
 
-from src.data import append_predictions, collect_recent_prices, extract_data, preprocess_data
+from src.processor import append_predictions, collect_recent_prices, preprocess_data
 
 
-class TestData:
-    """Test data extraction and preprocessing."""
-
-    def test_extract_data(self) -> None:
-        """Test extracting historical data."""
-        tickers = ["KO", "BBVA"]
-        data = extract_data(tickers, start_date="2024-01-01")
-
-        assert isinstance(data, dict)
-        assert len(data) > 0
-        for ticker in tickers:
-            if ticker in data:
-                assert isinstance(data[ticker], pd.DataFrame)
-                assert "Price" in data[ticker].columns
-                assert "Returns" in data[ticker].columns
-                assert data[ticker].index.name == "Date"
-                # Check that index is date type
-                assert all(isinstance(d, date) for d in data[ticker].index)
+class TestProcessor:
+    """Test data processing utilities."""
 
     def test_preprocess_data(self) -> None:
         """Test preprocessing data - aligns dates across tickers."""
@@ -74,21 +58,6 @@ class TestData:
         dates2_set = {d.date() for d in dates2}
         expected_common_dates = sorted(dates1_set & dates2_set)
         assert len(aligned["TICKER1"]) == len(expected_common_dates)
-
-    def test_extract_data_with_end_date(self) -> None:
-        """Test extracting data with end_date filter."""
-        tickers = ["KO"]
-        end_date = "2024-06-01"
-        data = extract_data(tickers, start_date="2024-01-01", end_date=end_date)
-
-        assert isinstance(data, dict)
-        if tickers[0] in data:
-            assert isinstance(data[tickers[0]], pd.DataFrame)
-            # Check that all dates are <= end_date
-            if len(data[tickers[0]]) > 0:
-                assert all(
-                    pd.Timestamp(d) <= pd.Timestamp(end_date) for d in data[tickers[0]].index
-                )
 
     def test_append_predictions(self) -> None:
         """Test appending predictions to portfolio data."""

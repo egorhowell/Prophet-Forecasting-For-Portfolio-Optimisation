@@ -8,10 +8,11 @@ from typing import Any
 
 import pandas as pd
 
-from src.data import append_predictions, collect_recent_prices, extract_data, preprocess_data
 from src.database import save_results_to_supabase
+from src.extractor import extract_data
 from src.model import ProphetModel
 from src.optimiser import optimize_portfolio_mean_variance
+from src.processor import append_predictions, collect_recent_prices, preprocess_data
 from src.settings import END_DATE, PORTFOLIO_TICKERS, START_DATE
 
 # Set up logging
@@ -35,6 +36,7 @@ def run_optimisation(
     Returns:
         Dictionary containing optimisation results with keys:
         - date: date object representing date optimisation was run
+        - prediction_date: date object for the prediction (next day after last historical date)
         - predictions: dict[str, float] of predicted prices for each ticker
         - current_prices: dict[str, float] of current prices for each ticker
         - predicted_returns: dict[str, float] of predicted returns for each ticker
@@ -48,14 +50,14 @@ def run_optimisation(
 
     # 1. Extract historical data
     logger.info("Extracting historical data...")
-    raw_data = extract_data(tickers, start_date=start_date, end_date=end_date)
-    if not raw_data:
+    all_stock_data = extract_data(tickers, start_date=start_date, end_date=end_date)
+    if not all_stock_data:
         logger.warning("No data extracted. Exiting optimisation.")
         return {}
 
     # 2. Preprocess historical data
     logger.info("Preprocessing data...")
-    portfolio_data = preprocess_data(raw_data)
+    portfolio_data = preprocess_data(all_stock_data)
 
     # 3. Predict next step using Prophet
     logger.info("Generating predictions...")
@@ -68,23 +70,17 @@ def run_optimisation(
     # 5. Append predictions to historical data
     predicted_data = append_predictions(portfolio_data, predictions, predicted_returns)
 
-    # 5. Current prices for logging
-    current_prices = {ticker: df["Price"].iloc[-1] for ticker, df in portfolio_data.items()}
-
     # 6. Optimise portfolio using predicted returns as expected returns
     logger.info("Calculating optimal portfolio allocation...")
-    optimal_weights = optimize_portfolio_mean_variance(predicted_data)
+    weights_dict = optimize_portfolio_mean_variance(predicted_data)
 
-    # 7. Convert weights to dictionary
-    weights_dict = optimal_weights.to_dict()
-
-    # 8. Log results
+    # 7. Log results
     logger.info("Portfolio Optimisation Results")
     logger.info(f"Date: {as_of_date}")
 
     logger.info("\nPredicted Prices (Next Day):")
     for ticker, price in predictions.items():
-        logger.info(f"  {ticker}: ${price:.2f} (Current: ${current_prices[ticker]:.2f})")
+        logger.info(f"  {ticker}: ${price:.2f}")
 
     logger.info("\nPredicted Returns:")
     for ticker, ret in predicted_returns.items():

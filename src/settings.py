@@ -28,3 +28,26 @@ PORTFOLIO_TICKERS = [
 
 # Database
 SUPABASE_TABLE_NAME = "stock_optimisation_store"
+
+# Holiday name mapping for Prophet model
+HOLIDAY_NAME_MAP = {
+    "New Year's Day": "new_years",
+    "Dr. Martin Luther King Jr. Day": "mlk_day",
+    "Good Friday": "good_friday",
+    "Memorial Day": "memorial_day",
+    "July 4th": "independence_day",
+    "Labor Day": "labor_day",
+    "Thanksgiving": "thanksgiving",
+    "Election Day": "election_day",
+    "Veteran Day": "veterans_day",
+    "Columbus Day": "columbus_day",
+    "Christmas": "christmas",
+    "Christmas Day": "christmas",
+}
+
+# Prophet model parameters
+PROPHET_PARAMS = {
+    "yearly_seasonality": True,
+    "weekly_seasonality": True,
+    "daily_seasonality": False,
+}

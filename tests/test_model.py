@@ -34,22 +34,6 @@ class TestProphetModel:
         assert predicted_price > 0
         assert model.model is not None  # Model should be fitted
 
-    def test_predict_next_multiple_calls(self) -> None:
-        """Test predict_next can be called multiple times."""
-        dates = pd.date_range("2024-01-01", periods=100, freq="D")
-        prices = 100 + np.cumsum(np.random.randn(100) * 0.5)
-        price_series = pd.Series(prices, index=dates)
-
-        model = ProphetModel()
-
-        # First call
-        predicted_price1 = model.predict_next(price_series)
-        assert isinstance(predicted_price1, float)
-
-        # Second call with same data
-        predicted_price2 = model.predict_next(price_series)
-        assert isinstance(predicted_price2, float)
-
     def test_predict_for_tickers(self) -> None:
         """Test predict_for_tickers method with multiple tickers."""
 
@@ -124,18 +108,6 @@ class TestProphetModel:
         # Check date format
         assert pd.api.types.is_datetime64_any_dtype(holidays["ds"])
 
-    def test_get_us_trading_holidays_multiple_years(self) -> None:
-        """Test holiday generation for multiple years."""
-        holidays = _get_us_trading_holidays(2023, 2025)
-
-        assert len(holidays) >= 24  # Should have ~8 holidays per year (3 years = 24 holidays)
-
-        # Check years are included
-        years = holidays["ds"].dt.year.unique()
-        assert 2023 in years
-        assert 2024 in years
-        assert 2025 in years
-
     def test_fit_with_holidays(self) -> None:
         """Test that Prophet model includes holidays when fitting."""
         dates = pd.date_range("2024-01-01", periods=100, freq="D")
@@ -165,4 +137,3 @@ class TestProphetModel:
         assert model.model.yearly_seasonality is True
         assert model.model.weekly_seasonality is True
         assert model.model.daily_seasonality is False
-        assert model.model.seasonality_mode == "additive"

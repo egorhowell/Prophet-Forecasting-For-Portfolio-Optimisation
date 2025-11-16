@@ -38,7 +38,5 @@ run:
 	poetry run python -m src.main
 
 dashboard:
-	poetry run streamlit run src/frontend.py
-
-.DEFAULT_GOAL := help
+	poetry run streamlit run src/streamlit_app.py
 
