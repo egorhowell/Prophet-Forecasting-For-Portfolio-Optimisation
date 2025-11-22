@@ -162,7 +162,7 @@ def pie_chart(weights_df: pd.DataFrame):
         values="portfolio_weight",
         hole=0.3,
     )
-    fig.update_traces(textinfo="label+percent", hovertemplate="%{label}: %{value:.2f}")
+    fig.update_traces(textinfo="label+percent+demo", hovertemplate="%{label}: %{value:.2f}")
     fig.update_layout(showlegend=True, legend_title_text="Ticker", height=360)
     return fig
 
