@@ -7,7 +7,7 @@ _(Needless to say it's for illustrative purposes and not financial advice)._
 
 **Live Application**: This project is hosted on a Hostinger VPS, runs every morning at 9am UTC and is accessible at [portfolio-optimisation.com](https://portfolio-optimisation.com)
 
-**Presentation Slides**: Here are slides to accompany this ReadME
+**Presentation Slides**: [Here](https://gamma.app/docs/Prophet-Forecasting-for-Portfolio-Optimisation-7qsgynwy1h5x3it) are slides to accompany this project.
 
 ## Components
 
