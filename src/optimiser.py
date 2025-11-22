@@ -87,7 +87,7 @@ def optimize_portfolio_mean_variance(
     bounds = tuple((minimum_allocation, maximum_allocation) for _ in range(num_assets))
 
     # Initial guess: equal weights
-        initial_weights = np.array([1 / num_assets] * num_assets)
+    initial_weights = np.array([1 / num_assets] * num_assets)
 
     # Run optimizer
     result = minimize(
