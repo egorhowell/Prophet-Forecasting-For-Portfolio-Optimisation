@@ -118,7 +118,7 @@ def main() -> None:
 
     except Exception as e:
         logger.error(f"Error during optimisation: {e}")
-        print(f"Error during optimisation: {e}", file=sys.stderr)
+            print(f"Error during optimisation: {e}", file=sys.stderr)
         import traceback
 
         traceback.print_exc()
